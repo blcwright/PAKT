@@ -1,0 +1,12 @@
+{%- doc -%}
+  Loads the shared landing page stylesheet (`assets/lp-core.css`).
+
+  Every `sections/lp-*.liquid` module renders this first so the section works on
+  any template, including when dropped into a standard page. Repeat renders emit
+  duplicate <link> tags, which browsers resolve to a single cached request.
+
+  @example
+  {% render 'lp-styles' %}
+{%- enddoc -%}
+
+{{ 'lp-core.css' | asset_url | stylesheet_tag }}

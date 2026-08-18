@@ -1,0 +1,649 @@
+{% comment %}
+  LP / Hero
+  ---------
+  Top-of-page conversion module for landing pages. Composed top to bottom of:
+
+    eyebrow → trust line + stars → headline → subheadline
+    → proof panel (`compare` blocks) + straddling offer pill
+    → CTA → guarantee note → feature row (`feature` blocks)
+
+  Every part is optional: leave a setting blank, or remove the blocks, and that
+  row disappears. Both block types are repeatable, so the proof panel and the
+  feature row scale to any number of columns.
+
+  Shared primitives (`.lp-*`) and design tokens live in `assets/lp-core.css`.
+  Only hero-specific layout lives in the {% stylesheet %} at the bottom of this
+  file, so duplicating this section for another strategy carries its layout with
+  it while staying visually in sync with the rest of the landing page.
+
+  All copy, media and colours are settings — nothing is hard-coded.
+{% endcomment %}
+
+{% render 'lp-styles' %}
+
+{% liquid
+  assign compare_blocks = section.blocks | where: 'type', 'compare'
+  assign feature_blocks = section.blocks | where: 'type', 'feature'
+
+  assign heading = section.settings.heading | escape | newline_to_br
+  assign subheading = section.settings.subheading | escape | newline_to_br
+%}
+
+{% capture section_style %}
+  {% if section.settings.background_color != blank %}--lp-color-surface: {{ section.settings.background_color }};{% endif %}
+  {% if section.settings.heading_color != blank %}--lp-color-heading: {{ section.settings.heading_color }};{% endif %}
+  {% if section.settings.text_color != blank %}--lp-color-ink: {{ section.settings.text_color }};{% endif %}
+  {% if section.settings.muted_text_color != blank %}--lp-color-ink-muted: {{ section.settings.muted_text_color }};{% endif %}
+  {% if section.settings.accent_color != blank %}--lp-color-accent: {{ section.settings.accent_color }};{% endif %}
+  {% if section.settings.cta_background != blank %}--lp-color-cta: {{ section.settings.cta_background }};{% endif %}
+  {% if section.settings.cta_text_color != blank %}--lp-color-cta-ink: {{ section.settings.cta_text_color }};{% endif %}
+  --lp-media-ratio: {{ section.settings.media_ratio }};
+  --lp-compare-columns: {{ compare_blocks.size | at_least: 1 }};
+  --lp-features-columns: {{ section.settings.features_columns }};
+  --lp-hero-padding-start: {{ section.settings.padding_block_start }}px;
+  --lp-hero-padding-end: {{ section.settings.padding_block_end }}px;
+{% endcapture %}
+
+<div class="lp lp-hero" style="{{ section_style | strip_newlines }}">
+  <div class="lp-container lp-hero__inner">
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="lp-eyebrow lp-center lp-hero__eyebrow">{{ section.settings.eyebrow }}</p>
+    {%- endif -%}
+
+    {%- if section.settings.trust_text != blank or section.settings.star_count > 0 -%}
+      <p class="lp-trust lp-hero__trust">
+        {%- if section.settings.trust_text != blank -%}
+          <span>{{ section.settings.trust_text }}</span>
+        {%- endif -%}
+
+        {%- if section.settings.star_count > 0 -%}
+          <span
+            class="lp-stars"
+            {% if section.settings.star_color != blank %}
+              style="--lp-color-star: {{ section.settings.star_color }};"
+            {% endif %}
+            role="img"
+            aria-label="{{ section.settings.star_count }} out of 5 stars"
+          >
+            {%- for i in (1..section.settings.star_count) -%}
+              <svg class="lp-stars__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <path d="M12 2l2.9 6.26 6.85.72-5.1 4.6 1.42 6.72L12 16.9l-6.07 3.4 1.42-6.72-5.1-4.6 6.85-.72L12 2z"/>
+              </svg>
+            {%- endfor -%}
+          </span>
+        {%- endif -%}
+      </p>
+    {%- endif -%}
+
+    {%- if section.settings.heading != blank -%}
+      <h1 class="lp-heading lp-center lp-hero__heading">{{ heading }}</h1>
+    {%- endif -%}
+
+    {%- if section.settings.subheading != blank -%}
+      <p class="lp-subheading lp-center lp-hero__subheading">{{ subheading }}</p>
+    {%- endif -%}
+
+    {%- if compare_blocks.size > 0 -%}
+      {%- liquid
+        assign show_pill = false
+        if section.settings.offer_pill != blank
+          assign show_pill = true
+        endif
+      -%}
+      <div
+        class="lp-panel lp-hero__panel{% if show_pill %} lp-panel--tagged{% endif %}"
+        {% if section.settings.panel_border_color != blank %}
+          style="--lp-color-border: {{ section.settings.panel_border_color }};"
+        {% endif %}
+      >
+        <div class="lp-compare">
+          {%- for block in compare_blocks -%}
+            <div class="lp-compare__item" {{ block.shopify_attributes }}>
+              <div class="lp-media">
+                {%- if block.settings.tag_label != blank -%}
+                  <span class="lp-tag{% if block.settings.tag_style == 'accent' %} lp-tag--accent{% endif %}">
+                    {{- block.settings.tag_label -}}
+                  </span>
+                {%- endif -%}
+
+                {%- if block.settings.image != blank -%}
+                  {{
+                    block.settings.image
+                    | image_url: width: 800
+                    | image_tag:
+                      class: 'lp-media__image',
+                      widths: '200, 300, 400, 600, 800',
+                      sizes: '(max-width: 460px) 45vw, 200px',
+                      loading: 'eager',
+                      fetchpriority: 'high'
+                  }}
+                {%- else -%}
+                  {{ 'image' | placeholder_svg_tag: 'lp-media__placeholder' }}
+                {%- endif -%}
+              </div>
+
+              {%- if block.settings.caption != blank -%}
+                <p class="lp-caption lp-center lp-compare__caption">{{ block.settings.caption }}</p>
+              {%- endif -%}
+            </div>
+          {%- endfor -%}
+        </div>
+
+        {%- if show_pill -%}
+          <span class="lp-pill lp-pill--straddle">{{ section.settings.offer_pill }}</span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.cta_label != blank -%}
+      <a
+        class="lp-cta lp-hero__cta"
+        {% if section.settings.cta_link != blank %}
+          href="{{ section.settings.cta_link }}"
+        {% else %}
+          role="link" aria-disabled="true"
+        {% endif %}
+      >
+        {{ section.settings.cta_label }}
+      </a>
+    {%- endif -%}
+
+    {%- if section.settings.guarantee_text != blank -%}
+      <p class="lp-note lp-center lp-hero__note">{{ section.settings.guarantee_text }}</p>
+    {%- endif -%}
+
+    {%- if feature_blocks.size > 0 -%}
+      <ul class="lp-features lp-hero__features" role="list">
+        {%- for block in feature_blocks -%}
+          <li class="lp-feature" {{ block.shopify_attributes }}>
+            {%- if block.settings.icon != 'none' or block.settings.image_upload != blank -%}
+              <span
+                class="lp-feature__badge"
+                {% if block.settings.badge_color != blank %}
+                  style="--lp-color-accent-soft: {{ block.settings.badge_color }};"
+                {% endif %}
+              >
+                {%- render 'icon-or-image',
+                  icon: block.settings.icon,
+                  image_upload: block.settings.image_upload,
+                  width: 20,
+                  class_name: 'lp-feature__icon'
+                -%}
+              </span>
+            {%- endif -%}
+
+            {%- if block.settings.label != blank -%}
+              <p class="lp-feature__label">{{ block.settings.label }}</p>
+            {%- endif -%}
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
+  </div>
+</div>
+
+{% stylesheet %}
+  /* Hero-specific layout only. Colours, type and component looks come from
+     assets/lp-core.css. Margins express the vertical rhythm between rows so
+     each row can be removed without leaving a gap behind. */
+  .lp-hero__inner {
+    padding-block-start: var(--lp-hero-padding-start, 28px);
+    padding-block-end: var(--lp-hero-padding-end, 28px);
+  }
+
+  .lp-hero__trust {
+    margin-block-start: var(--lp-space-xs);
+  }
+
+  .lp-hero__heading {
+    margin-block-start: var(--lp-space-2xs);
+  }
+
+  .lp-hero__subheading {
+    margin-block-start: var(--lp-space-xs);
+    margin-inline: auto;
+    max-width: 30ch;
+  }
+
+  .lp-hero__panel {
+    margin-block-start: var(--lp-space-md);
+  }
+
+  .lp-hero__cta {
+    margin-block-start: var(--lp-space-md);
+  }
+
+  .lp-hero__note {
+    margin-block-start: var(--lp-space-sm);
+  }
+
+  .lp-hero__features {
+    margin-block-start: var(--lp-space-sm);
+    padding: 0;
+    list-style: none;
+  }
+
+  /* The straddling offer pill sits over the panel border, so the CTA needs
+     extra clearance only when the pill is present. */
+  .lp-hero__panel.lp-panel--tagged + .lp-hero__cta {
+    margin-block-start: var(--lp-space-lg);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "LP Hero",
+  "tag": "section",
+  "class": "lp-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "Pets Are Kids Too"
+    },
+    {
+      "type": "header",
+      "content": "Social proof"
+    },
+    {
+      "type": "text",
+      "id": "trust_text",
+      "label": "Trust line",
+      "default": "Trusted by 10,000+ Dog Parents"
+    },
+    {
+      "type": "range",
+      "id": "star_count",
+      "label": "Stars",
+      "min": 0,
+      "max": 5,
+      "step": 1,
+      "default": 5,
+      "info": "Set to 0 to hide."
+    },
+    {
+      "type": "color",
+      "id": "star_color",
+      "label": "Star colour",
+      "default": "#d8a13a"
+    },
+    {
+      "type": "header",
+      "content": "Headline"
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Heading",
+      "default": "A Natural Way to Protect Your Dog's Spine",
+      "info": "Line breaks are preserved."
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subheading",
+      "default": "Slow DM's progression and restore mobility without surgery or side effects."
+    },
+    {
+      "type": "header",
+      "content": "Proof panel"
+    },
+    {
+      "type": "select",
+      "id": "media_ratio",
+      "label": "Image ratio",
+      "options": [
+        {
+          "value": "1 / 1",
+          "label": "Square"
+        },
+        {
+          "value": "4 / 5",
+          "label": "Portrait (4:5)"
+        },
+        {
+          "value": "3 / 4",
+          "label": "Portrait (3:4)"
+        },
+        {
+          "value": "16 / 9",
+          "label": "Landscape (16:9)"
+        }
+      ],
+      "default": "1 / 1"
+    },
+    {
+      "type": "text",
+      "id": "offer_pill",
+      "label": "Offer pill",
+      "default": "35% Off + Free Gifts",
+      "info": "Sits over the bottom edge of the panel. Leave blank to hide."
+    },
+    {
+      "type": "color",
+      "id": "panel_border_color",
+      "label": "Panel border",
+      "default": "#e0d8c5"
+    },
+    {
+      "type": "header",
+      "content": "Call to action"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Button label",
+      "default": "Start Protecting My Dog's Spine"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "Button link"
+    },
+    {
+      "type": "text",
+      "id": "guarantee_text",
+      "label": "Guarantee",
+      "default": "90-Day Money-Back Guarantee"
+    },
+    {
+      "type": "header",
+      "content": "Feature row"
+    },
+    {
+      "type": "range",
+      "id": "features_columns",
+      "label": "Columns",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "header",
+      "content": "Colours"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#faf6ec"
+    },
+    {
+      "type": "color",
+      "id": "heading_color",
+      "label": "Heading",
+      "default": "#21302a"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#23211d"
+    },
+    {
+      "type": "color",
+      "id": "muted_text_color",
+      "label": "Muted text",
+      "default": "#6f6a61"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent",
+      "default": "#a9762f",
+      "info": "Used by the guarantee line and accent tags."
+    },
+    {
+      "type": "color",
+      "id": "cta_background",
+      "label": "Button background",
+      "default": "#2e5c4e"
+    },
+    {
+      "type": "color",
+      "id": "cta_text_color",
+      "label": "Button text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "header",
+      "content": "Padding"
+    },
+    {
+      "type": "range",
+      "id": "padding_block_start",
+      "label": "Top",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "padding_block_end",
+      "label": "Bottom",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    }
+  ],
+  "blocks": [
+    {
+      "type": "compare",
+      "name": "Proof image",
+      "settings": [
+        {
+          "type": "text",
+          "id": "tag_label",
+          "label": "Tag",
+          "default": "Before",
+          "info": "Leave blank to hide the corner tag."
+        },
+        {
+          "type": "select",
+          "id": "tag_style",
+          "label": "Tag style",
+          "options": [
+            {
+              "value": "dark",
+              "label": "Dark"
+            },
+            {
+              "value": "accent",
+              "label": "Accent"
+            }
+          ],
+          "default": "dark"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "caption",
+          "label": "Caption"
+        }
+      ]
+    },
+    {
+      "type": "feature",
+      "name": "Feature",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "None"
+            },
+            {
+              "value": "bottle",
+              "label": "Bottle"
+            },
+            {
+              "value": "box",
+              "label": "Box"
+            },
+            {
+              "value": "carrot",
+              "label": "Carrot"
+            },
+            {
+              "value": "check_box",
+              "label": "Checkbox"
+            },
+            {
+              "value": "clipboard",
+              "label": "Clipboard"
+            },
+            {
+              "value": "dairy_free",
+              "label": "Dairy free"
+            },
+            {
+              "value": "fire",
+              "label": "Fire"
+            },
+            {
+              "value": "gluten_free",
+              "label": "Gluten free"
+            },
+            {
+              "value": "heart",
+              "label": "Heart"
+            },
+            {
+              "value": "leaf",
+              "label": "Leaf"
+            },
+            {
+              "value": "lightning_bolt",
+              "label": "Lightning bolt"
+            },
+            {
+              "value": "lock",
+              "label": "Lock"
+            },
+            {
+              "value": "nut_free",
+              "label": "Nut free"
+            },
+            {
+              "value": "paw_print",
+              "label": "Paw print"
+            },
+            {
+              "value": "plant",
+              "label": "Plant"
+            },
+            {
+              "value": "price_tag",
+              "label": "Price tag"
+            },
+            {
+              "value": "recycle",
+              "label": "Recycle"
+            },
+            {
+              "value": "return",
+              "label": "Return"
+            },
+            {
+              "value": "ruler",
+              "label": "Ruler"
+            },
+            {
+              "value": "silhouette",
+              "label": "Silhouette"
+            },
+            {
+              "value": "star",
+              "label": "Star"
+            },
+            {
+              "value": "stopwatch",
+              "label": "Stopwatch"
+            },
+            {
+              "value": "truck",
+              "label": "Truck"
+            }
+          ],
+          "default": "paw_print"
+        },
+        {
+          "type": "image_picker",
+          "id": "image_upload",
+          "label": "Custom icon",
+          "info": "Overrides the icon above."
+        },
+        {
+          "type": "text",
+          "id": "label",
+          "label": "Label",
+          "default": "Supports Nerve & Spine Health"
+        },
+        {
+          "type": "color",
+          "id": "badge_color",
+          "label": "Badge background",
+          "default": "#f5e4c6"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "LP Hero",
+      "blocks": [
+        {
+          "type": "compare",
+          "settings": {
+            "tag_label": "Before",
+            "tag_style": "dark",
+            "caption": "Before: dog dragging paw on walk"
+          }
+        },
+        {
+          "type": "compare",
+          "settings": {
+            "tag_label": "After",
+            "tag_style": "accent",
+            "caption": "After: dog running happily at park"
+          }
+        },
+        {
+          "type": "feature",
+          "settings": {
+            "icon": "silhouette",
+            "label": "Supports Nerve & Spine Health"
+          }
+        },
+        {
+          "type": "feature",
+          "settings": {
+            "icon": "check_box",
+            "label": "Vet-Formulated"
+          }
+        },
+        {
+          "type": "feature",
+          "settings": {
+            "icon": "plant",
+            "label": "7 Clinically-Studied Mushrooms"
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

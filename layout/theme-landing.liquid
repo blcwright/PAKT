@@ -1,0 +1,63 @@
+{% comment %}
+  Landing page layout
+  -------------------
+  A stripped-down alternative to `layout/theme.liquid` for conversion landing
+  pages: no header group, no navigation, no footer — nothing that competes with
+  the page's single call to action.
+
+  Opt in from a JSON template with a top-level "layout" key:
+
+    { "layout": "theme-landing", "sections": { ... }, "order": [ ... ] }
+
+  Theme fonts, colour palette and base styles are still loaded, so `lp-*`
+  sections can inherit the store's typography settings.
+{% endcomment %}
+<!doctype html>
+<html
+  {% if request.design_mode %}
+    class="shopify-design-mode"
+  {% endif %}
+  lang="{{ request.locale.iso_code }}"
+>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+
+    {%- if settings.favicon != blank -%}
+      <link
+        rel="icon"
+        type="image/png"
+        href="{{ settings.favicon | image_url: width: 32, height: 32 }}"
+      >
+    {%- endif -%}
+
+    {%- render 'meta-tags' -%}
+    {%- render 'stylesheets' -%}
+    {%- render 'fonts' -%}
+    {%- render 'scripts' -%}
+    {%- render 'theme-styles-variables' -%}
+    {%- render 'color-palette' -%}
+
+    {% if request.design_mode %}
+      {%- render 'theme-editor' -%}
+    {% endif %}
+
+    {{ content_for_header }}
+  </head>
+
+  <body class="lp-body page-width-{{ settings.page_width }}">
+    {% render 'skip-to-content-link', href: '#MainContent', text: 'accessibility.skip_to_text' %}
+
+    <main
+      id="MainContent"
+      class="content-for-layout"
+      role="main"
+      data-template="{{ template }}"
+    >
+      {{ content_for_layout }}
+    </main>
+
+    {% render 'cart-drawer', render_wrapper: true %}
+  </body>
+</html>

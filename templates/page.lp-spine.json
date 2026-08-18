@@ -1,0 +1,91 @@
+{
+  "layout": "theme-landing",
+  "sections": {
+    "announcement": {
+      "type": "lp-announcement-bar",
+      "settings": {
+        "text": "35% Off + Free Gifts",
+        "separator": "·",
+        "show_countdown": true,
+        "countdown_label": "Ends in",
+        "countdown_mode": "evergreen",
+        "countdown_duration": 960,
+        "countdown_expired_text": "Offer ended",
+        "sticky": false,
+        "background_color": "#211f1c",
+        "text_color": "#ffffff",
+        "padding_block": 9
+      }
+    },
+    "hero": {
+      "type": "lp-hero",
+      "blocks": {
+        "before": {
+          "type": "compare",
+          "settings": {
+            "tag_label": "Before",
+            "tag_style": "dark",
+            "caption": "Before: dog dragging paw on walk"
+          }
+        },
+        "after": {
+          "type": "compare",
+          "settings": {
+            "tag_label": "After",
+            "tag_style": "accent",
+            "caption": "After: dog running happily at park"
+          }
+        },
+        "feature_spine": {
+          "type": "feature",
+          "settings": {
+            "icon": "silhouette",
+            "label": "Supports Nerve & Spine Health",
+            "badge_color": "#f5e4c6"
+          }
+        },
+        "feature_vet": {
+          "type": "feature",
+          "settings": {
+            "icon": "check_box",
+            "label": "Vet-Formulated",
+            "badge_color": "#f5e4c6"
+          }
+        },
+        "feature_mushrooms": {
+          "type": "feature",
+          "settings": {
+            "icon": "plant",
+            "label": "7 Clinically-Studied Mushrooms",
+            "badge_color": "#f5e4c6"
+          }
+        }
+      },
+      "block_order": ["before", "after", "feature_spine", "feature_vet", "feature_mushrooms"],
+      "settings": {
+        "eyebrow": "Pets Are Kids Too",
+        "trust_text": "Trusted by 10,000+ Dog Parents",
+        "star_count": 5,
+        "star_color": "#d8a13a",
+        "heading": "A Natural Way to Protect Your Dog's Spine",
+        "subheading": "Slow DM's progression and restore mobility without surgery or side effects.",
+        "media_ratio": "1 / 1",
+        "offer_pill": "35% Off + Free Gifts",
+        "panel_border_color": "#e0d8c5",
+        "cta_label": "Start Protecting My Dog's Spine",
+        "guarantee_text": "90-Day Money-Back Guarantee",
+        "features_columns": 3,
+        "background_color": "#faf6ec",
+        "heading_color": "#21302a",
+        "text_color": "#23211d",
+        "muted_text_color": "#6f6a61",
+        "accent_color": "#a9762f",
+        "cta_background": "#2e5c4e",
+        "cta_text_color": "#ffffff",
+        "padding_block_start": 28,
+        "padding_block_end": 32
+      }
+    }
+  },
+  "order": ["announcement", "hero"]
+}

@@ -1,0 +1,476 @@
+/* ==========================================================================
+   LP CORE — shared design system for landing page ("lp-*") sections
+   ==========================================================================
+
+   WHAT THIS IS
+   ------------
+   A single, section-agnostic stylesheet shared by every `sections/lp-*.liquid`
+   module. Loaded once per page via `{% render 'lp-styles' %}`.
+
+   Landing pages are MOBILE-ONLY by design: `.lp-container` caps the content
+   column at `--lp-width` and centres it, so wide viewports render the same
+   mobile layout rather than a stretched desktop one. Do not add desktop
+   breakpoints here — build a separate stylesheet if a desktop LP is ever needed.
+
+   HOW TO USE IT (for other agents building new lp-* sections)
+   -----------------------------------------------------------
+   1. Wrap the section in `.lp` (token scope + isolation) and put content inside
+      `.lp-container`.
+   2. Compose from the PRIMITIVES below. Do not write new colours/sizes inline —
+      add a token here so every module stays in sync.
+   3. Every token can be overridden per-section from the theme editor by writing
+      the same custom property into the section's inline `style` attribute, e.g.
+      `style="--lp-color-cta: {{ section.settings.cta_background }}"`. Sections
+      should only emit the override when the setting is non-blank, so the
+      defaults below stay authoritative.
+
+   NAMING
+   ------
+   --lp-color-*    palette          --lp-space-*   spacing scale
+   --lp-font-*     type scale       --lp-radius-*  corner radii
+   .lp-*           block            .lp-*__*       element
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. TOKENS
+   -------------------------------------------------------------------------- */
+
+:root {
+  /* Layout */
+  --lp-width: 430px; /* mobile content column cap */
+  --lp-gutter: 20px;
+
+  /* Palette — surfaces */
+  --lp-color-surface: #faf6ec; /* page / hero cream */
+  --lp-color-surface-alt: #f4ecd9; /* banded sections (logo strip, etc.) */
+  --lp-color-panel: #ebe7dd; /* media wells, inset cards */
+  --lp-color-border: #e0d8c5;
+
+  /* Palette — ink */
+  --lp-color-ink: #23211d; /* primary body/eyebrow */
+  --lp-color-ink-muted: #6f6a61; /* supporting copy, captions */
+  --lp-color-heading: #21302a; /* headline green-black */
+  --lp-color-ink-inverse: #ffffff;
+
+  /* Palette — brand */
+  --lp-color-accent: #a9762f; /* gold: guarantee, AFTER tag */
+  --lp-color-accent-soft: #f5e4c6; /* gold tint: icon badges */
+  --lp-color-accent-ink: #6b4a17; /* ink on accent-soft */
+  --lp-color-star: #d8a13a;
+
+  /* Palette — actions */
+  --lp-color-cta: #2e5c4e;
+  --lp-color-cta-hover: #264d41;
+  --lp-color-cta-ink: #ffffff;
+  --lp-color-badge: #211f1c; /* dark pills + announcement bar */
+  --lp-color-badge-ink: #ffffff;
+
+  /* Type — families default to the theme's font settings */
+  --lp-font-heading: var(--font-heading--family, serif);
+  --lp-font-body: var(--font-body--family, sans-serif);
+  --lp-font-mono: ui-monospace, sfmono-regular, menlo, monospace;
+
+  /* Type — scale */
+  --lp-font-2xs: 0.6875rem; /* 11px */
+  --lp-font-xs: 0.75rem; /* 12px */
+  --lp-font-sm: 0.8125rem; /* 13px */
+  --lp-font-md: 0.875rem; /* 14px */
+  --lp-font-lg: 1rem; /* 16px */
+  --lp-font-display: 1.875rem; /* 30px */
+
+  /* Spacing scale */
+  --lp-space-3xs: 4px;
+  --lp-space-2xs: 8px;
+  --lp-space-xs: 12px;
+  --lp-space-sm: 16px;
+  --lp-space-md: 20px;
+  --lp-space-lg: 28px;
+  --lp-space-xl: 40px;
+
+  /* Radii */
+  --lp-radius-sm: 8px;
+  --lp-radius-md: 12px;
+  --lp-radius-lg: 16px;
+  --lp-radius-pill: 999px;
+}
+
+/* --------------------------------------------------------------------------
+   2. LAYOUT PRIMITIVES
+   -------------------------------------------------------------------------- */
+
+/* Body class applied by layout/theme-landing.liquid */
+.lp-body {
+  background-color: var(--lp-color-surface);
+}
+
+/* Section-level scope. Sets the LP type baseline so modules don't inherit
+   surprises from theme typography. */
+.lp {
+  position: relative;
+  font-family: var(--lp-font-body);
+  color: var(--lp-color-ink);
+  background-color: var(--lp-color-surface);
+  -webkit-font-smoothing: antialiased;
+}
+
+.lp-container {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: var(--lp-width);
+  margin-inline: auto;
+  padding-inline: var(--lp-gutter);
+}
+
+/* Vertical rhythm helper: `--lp-stack-gap` is set by the consuming module. */
+.lp-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--lp-stack-gap, var(--lp-space-xs));
+}
+
+.lp-center {
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------
+   3. TYPOGRAPHY PRIMITIVES
+   -------------------------------------------------------------------------- */
+
+.lp-eyebrow {
+  margin: 0;
+  font-family: var(--lp-font-body);
+  font-size: var(--lp-font-sm);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--lp-color-ink);
+}
+
+.lp-heading {
+  margin: 0;
+  font-family: var(--lp-font-heading);
+  font-size: var(--lp-font-display);
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  color: var(--lp-color-heading);
+}
+
+.lp-subheading {
+  margin: 0;
+  font-size: var(--lp-font-md);
+  line-height: 1.5;
+  text-wrap: pretty;
+  color: var(--lp-color-ink-muted);
+}
+
+.lp-caption {
+  margin: 0;
+  font-size: var(--lp-font-xs);
+  line-height: 1.4;
+  text-wrap: pretty;
+  color: var(--lp-color-ink-muted);
+}
+
+/* Small, bold, coloured reassurance line (e.g. money-back guarantee). */
+.lp-note {
+  margin: 0;
+  font-size: var(--lp-font-sm);
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--lp-color-accent);
+}
+
+/* --------------------------------------------------------------------------
+   4. SOCIAL PROOF
+   -------------------------------------------------------------------------- */
+
+.lp-trust {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lp-space-2xs);
+  margin: 0;
+  font-size: var(--lp-font-md);
+  line-height: 1.3;
+  color: var(--lp-color-ink);
+}
+
+.lp-stars {
+  display: inline-flex;
+  gap: 1px;
+  color: var(--lp-color-star);
+}
+
+.lp-stars__icon {
+  display: block;
+  width: 14px;
+  height: 14px;
+  fill: currentcolor;
+}
+
+/* --------------------------------------------------------------------------
+   5. PANELS + MEDIA
+   -------------------------------------------------------------------------- */
+
+/* Bordered container used to group proof media. `.lp-panel--tagged` reserves
+   room at the bottom so a `.lp-pill` can straddle the border. */
+.lp-panel {
+  position: relative;
+  padding: var(--lp-space-xs);
+  border: 1px solid var(--lp-color-border);
+  border-radius: var(--lp-radius-lg);
+}
+
+.lp-panel--tagged {
+  padding-block-end: var(--lp-space-lg);
+}
+
+/* Equal-width media columns inside a panel. */
+.lp-compare {
+  display: grid;
+  grid-template-columns: repeat(var(--lp-compare-columns, 2), minmax(0, 1fr));
+  gap: var(--lp-space-xs);
+}
+
+/* One column of the proof panel: a filled card holding a media well and its
+   caption, so the caption reads as part of the same card. */
+.lp-compare__item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: var(--lp-radius-md);
+  background-color: var(--lp-color-panel);
+}
+
+.lp-compare__item .lp-media {
+  border-radius: 0;
+}
+
+.lp-compare__caption {
+  padding: var(--lp-space-2xs) 10px var(--lp-space-xs);
+}
+
+/* Media well: fixed aspect box that holds an image or a placeholder glyph. */
+.lp-media {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  aspect-ratio: var(--lp-media-ratio, 1 / 1);
+  border-radius: var(--lp-radius-md);
+  background-color: var(--lp-color-panel);
+}
+
+.lp-media__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.lp-media__placeholder {
+  width: 34px;
+  height: 34px;
+  fill: var(--lp-color-ink-muted);
+  opacity: 0.35;
+}
+
+/* Corner tag on a media well (BEFORE / AFTER). */
+.lp-tag {
+  position: absolute;
+  inset-block-start: var(--lp-space-2xs);
+  inset-inline-start: var(--lp-space-2xs);
+  z-index: 1;
+  padding: 3px 10px;
+  border-radius: var(--lp-radius-pill);
+  font-size: var(--lp-font-2xs);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.5;
+  color: var(--lp-color-badge-ink);
+  background-color: var(--lp-color-badge);
+}
+
+.lp-tag--accent {
+  background-color: var(--lp-color-accent);
+}
+
+/* --------------------------------------------------------------------------
+   6. PILLS + BADGES
+   -------------------------------------------------------------------------- */
+
+.lp-pill {
+  display: inline-block;
+  padding: 7px 16px;
+  border-radius: var(--lp-radius-pill);
+  font-size: var(--lp-font-xs);
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--lp-color-badge-ink);
+  background-color: var(--lp-color-badge);
+}
+
+/* Centres a pill over the bottom edge of the preceding `.lp-panel--tagged`. */
+.lp-pill--straddle {
+  position: absolute;
+  inset-block-end: 0;
+  inset-inline-start: 50%;
+  transform: translate(-50%, 50%);
+  white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   7. ACTIONS
+   -------------------------------------------------------------------------- */
+
+.lp-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 56px;
+  padding: var(--lp-space-sm) var(--lp-space-md);
+  border: 0;
+  border-radius: var(--lp-radius-pill);
+  font-family: inherit;
+  font-size: var(--lp-font-lg);
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  color: var(--lp-color-cta-ink);
+  background-color: var(--lp-color-cta);
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.lp-cta:hover {
+  background-color: var(--lp-color-cta-hover);
+}
+
+.lp-cta:active {
+  transform: scale(0.99);
+}
+
+.lp-cta:focus-visible {
+  outline: 2px solid var(--lp-color-heading);
+  outline-offset: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   8. ICON FEATURE ROW
+   -------------------------------------------------------------------------- */
+
+.lp-features {
+  display: grid;
+  grid-template-columns: repeat(var(--lp-features-columns, 3), minmax(0, 1fr));
+  gap: var(--lp-space-xs);
+  align-items: start;
+}
+
+.lp-feature {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--lp-space-2xs);
+  text-align: center;
+}
+
+.lp-feature__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--lp-radius-pill);
+  color: var(--lp-color-accent-ink);
+  background-color: var(--lp-color-accent-soft);
+}
+
+.lp-feature__badge img,
+.lp-feature__badge svg {
+  display: block;
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.lp-feature__label {
+  margin: 0;
+  font-size: var(--lp-font-xs);
+  font-weight: 700;
+  line-height: 1.3;
+  text-wrap: balance;
+  color: var(--lp-color-ink);
+}
+
+/* --------------------------------------------------------------------------
+   9. ANNOUNCEMENT BAR
+   -------------------------------------------------------------------------- */
+
+.lp-bar {
+  background-color: var(--lp-color-badge);
+  color: var(--lp-color-badge-ink);
+}
+
+.lp-bar--sticky {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 10;
+}
+
+.lp-bar__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--lp-space-2xs);
+  font-size: var(--lp-font-xs);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.lp-bar__text {
+  margin: 0;
+}
+
+.lp-bar__separator {
+  opacity: 0.5;
+}
+
+.lp-bar__link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.lp-bar__link:hover {
+  text-decoration: underline;
+}
+
+/* Tabular figures keep the timer from reflowing every second. */
+.lp-countdown__time {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+/* --------------------------------------------------------------------------
+   10. MOTION
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .lp *,
+  .lp *::before,
+  .lp *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

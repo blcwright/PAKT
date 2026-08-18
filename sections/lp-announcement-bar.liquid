@@ -1,0 +1,212 @@
+{% comment %}
+  LP / Announcement bar
+  ---------------------
+  Offer strip for landing pages: a short offer line, an optional separator, and
+  an optional countdown timer.
+
+  Styling lives in `assets/lp-core.css` (`.lp-bar*`, `.lp-pill`, tokens).
+  Timer behaviour lives in `assets/lp-countdown.js`.
+
+  All copy comes from section settings — nothing here is hard-coded, so the
+  section can be duplicated per offer/strategy without touching Liquid.
+{% endcomment %}
+
+{% render 'lp-styles' %}
+
+{% liquid
+  assign has_countdown = false
+  if section.settings.show_countdown
+    assign has_countdown = true
+  endif
+
+  assign has_text = false
+  if section.settings.text != blank
+    assign has_text = true
+  endif
+%}
+
+{% if has_countdown %}
+  <script src="{{ 'lp-countdown.js' | asset_url }}" type="module"></script>
+{% endif %}
+
+{% capture bar_style %}
+  {% if section.settings.background_color != blank %}--lp-color-badge: {{ section.settings.background_color }};{% endif %}
+  {% if section.settings.text_color != blank %}--lp-color-badge-ink: {{ section.settings.text_color }};{% endif %}
+  --lp-bar-padding-block: {{ section.settings.padding_block }}px;
+{% endcapture %}
+
+<aside
+  class="lp lp-bar{% if section.settings.sticky %} lp-bar--sticky{% endif %}"
+  style="{{ bar_style | strip_newlines }}"
+>
+  {% capture bar_content %}
+    <div class="lp-container lp-bar__inner">
+      {% if has_text %}
+        <p class="lp-bar__text">{{ section.settings.text }}</p>
+      {% endif %}
+
+      {% if has_text and has_countdown %}
+        <span class="lp-bar__separator" aria-hidden="true">{{ section.settings.separator }}</span>
+      {% endif %}
+
+      {% if has_countdown %}
+        <lp-countdown
+          class="lp-bar__text lp-countdown"
+          data-mode="{{ section.settings.countdown_mode }}"
+          data-duration-minutes="{{ section.settings.countdown_duration }}"
+          data-ends-at="{{ section.settings.countdown_ends_at }}"
+          data-storage-key="{{ section.id }}"
+          data-expired-text="{{ section.settings.countdown_expired_text | escape }}"
+        >
+          {%- if section.settings.countdown_label != blank -%}
+            {{ section.settings.countdown_label }}
+          {%- endif -%}
+          <span class="lp-countdown__time" data-countdown-time>--:--:--</span>
+        </lp-countdown>
+      {% endif %}
+    </div>
+  {% endcapture %}
+
+  {% if section.settings.link != blank %}
+    <a class="lp-bar__link" href="{{ section.settings.link }}">{{ bar_content }}</a>
+  {% else %}
+    {{ bar_content }}
+  {% endif %}
+</aside>
+
+{% stylesheet %}
+  /* Section-local: padding is the only bar dimension exposed per-section.
+     Everything else is a token in assets/lp-core.css. */
+  .lp-bar .lp-bar__inner {
+    padding-block: var(--lp-bar-padding-block, 9px);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "LP Announcement bar",
+  "tag": "section",
+  "class": "lp-section",
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "text",
+      "label": "Offer text",
+      "default": "35% Off + Free Gifts"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Link",
+      "info": "Optional. Makes the whole bar clickable."
+    },
+    {
+      "type": "text",
+      "id": "separator",
+      "label": "Separator",
+      "default": "·"
+    },
+    {
+      "type": "header",
+      "content": "Countdown"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_countdown",
+      "label": "Show countdown",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "countdown_label",
+      "label": "Countdown label",
+      "default": "Ends in",
+      "visible_if": "{{ section.settings.show_countdown }}"
+    },
+    {
+      "type": "select",
+      "id": "countdown_mode",
+      "label": "Countdown type",
+      "options": [
+        {
+          "value": "evergreen",
+          "label": "Evergreen (per visitor)"
+        },
+        {
+          "value": "fixed",
+          "label": "Fixed end date"
+        }
+      ],
+      "default": "evergreen",
+      "info": "Evergreen restarts for each visitor. Fixed counts down to one shared deadline.",
+      "visible_if": "{{ section.settings.show_countdown }}"
+    },
+    {
+      "type": "range",
+      "id": "countdown_duration",
+      "label": "Countdown length",
+      "min": 15,
+      "max": 2880,
+      "step": 15,
+      "unit": "min",
+      "default": 960,
+      "visible_if": "{{ section.settings.show_countdown and section.settings.countdown_mode == 'evergreen' }}"
+    },
+    {
+      "type": "text",
+      "id": "countdown_ends_at",
+      "label": "End date and time",
+      "default": "2026-12-31T23:59:00",
+      "info": "Store's time zone is not applied — use the format 2026-12-31T23:59:00.",
+      "visible_if": "{{ section.settings.show_countdown and section.settings.countdown_mode == 'fixed' }}"
+    },
+    {
+      "type": "text",
+      "id": "countdown_expired_text",
+      "label": "Text after expiry",
+      "default": "Offer ended",
+      "info": "Leave blank to hide the countdown once it expires.",
+      "visible_if": "{{ section.settings.show_countdown }}"
+    },
+    {
+      "type": "header",
+      "content": "Appearance"
+    },
+    {
+      "type": "checkbox",
+      "id": "sticky",
+      "label": "Stick to top of screen",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "info": "Leave blank to use the landing page default.",
+      "default": "#211f1c"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "info": "Leave blank to use the landing page default.",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "padding_block",
+      "label": "Vertical padding",
+      "min": 4,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 9
+    }
+  ],
+  "presets": [
+    {
+      "name": "LP Announcement bar"
+    }
+  ]
+}
+{% endschema %}
