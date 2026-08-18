@@ -1,3 +1,16 @@
+/*
+ * ------------------------------------------------------------
+ * Landing page: DM / spine.
+ *
+ * Renders through layout/theme-landing.liquid (no header, nav or
+ * footer) and is built from the mobile-only "lp-*" section system.
+ * Shared tokens and primitives live in assets/lp-core.css.
+ *
+ * To launch another strategy, copy this file to
+ * templates/page.<name>.json and edit the settings below — the
+ * sections themselves should not need changing.
+ * ------------------------------------------------------------
+ */
 {
   "layout": "theme-landing",
   "sections": {
